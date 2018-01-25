@@ -1,17 +1,29 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CNBlogsCrawler.Inits;
+using CNBlogsCrawler.Sqls;
+using CNBlogsCrawler.Store;
+using CNBlogsCrawler.Store.Dtos;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Neo4j.Driver.V1;
 using Serilog;
 using Serilog.Events;
 using System;
+using System.Threading.Tasks;
 
 namespace CNBlogsCrawler
 {
     public static class App
     {
-        static void Main(string[] args)
-        {
+        static async Task Main(string[] args)
+        {            
+            var container = ContainerBuilder.Create();
+            var db = container.GetService<DB>();
+            await db.EnsureConstraint();
+            await db.CreateUser(new User
+            {
+                UserName = "test"
+            });
         }
     }
 }

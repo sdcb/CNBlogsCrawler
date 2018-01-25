@@ -1,0 +1,10 @@
+﻿sql EnsureConstraint
+{
+	CREATE CONSTRAINT ON(n: User) 
+	ASSERT n.UserName IS UNIQUE;
+}
+
+sql CreateUser
+{
+	CREATE (n: User $props);
+}
