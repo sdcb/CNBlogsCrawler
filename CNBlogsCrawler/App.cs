@@ -1,5 +1,5 @@
-﻿using CNBlogsCrawler.Inits;
-using CNBlogsCrawler.Sqls;
+﻿using CNBlogsCrawler.Crawler;
+using CNBlogsCrawler.Inits;
 using CNBlogsCrawler.Store;
 using CNBlogsCrawler.Store.Dtos;
 using Microsoft.Extensions.Configuration;
@@ -20,10 +20,9 @@ namespace CNBlogsCrawler
             var container = ContainerBuilder.Create();
             var db = container.GetService<DB>();
             await db.EnsureConstraint();
-            await db.CreateUser(new User
-            {
-                UserName = "test"
-            });
+
+            var seeder = container.GetService<CrawlerSeeder>();
+            await seeder.Seed();
         }
     }
 }

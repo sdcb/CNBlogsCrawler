@@ -1,7 +1,7 @@
 ﻿using CNBlogsCrawler.Inits;
-using CNBlogsCrawler.Sqls;
 using CNBlogsCrawler.Store.Dtos;
 using Neo4j.Driver.V1;
+using sdmap.ext;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -14,9 +14,9 @@ namespace CNBlogsCrawler.Store
     public class DB
     {
         private readonly IDriver _driver;
-        private readonly SdmapNeo4j _sdmap;
+        private readonly SdmapContext _sdmap;
 
-        public DB(IDriver driver, SdmapNeo4j sdmap)
+        public DB(IDriver driver, SdmapContext sdmap)
         {
             _driver = driver;
             _sdmap = sdmap;
@@ -29,7 +29,7 @@ namespace CNBlogsCrawler.Store
         {
             using (var session = OpenSession())
             {
-                await _sdmap.RunAsync(session, GetId());
+                await _sdmap.ExecuteAsync(session, GetId());
             }
         }
 
@@ -37,7 +37,16 @@ namespace CNBlogsCrawler.Store
         {
             using (var session = OpenSession())
             {
-                await _sdmap.RunAsync(session, GetId(), new { props = user });
+                await _sdmap.ExecuteAsync(session, GetId(), new { props = user });
+            }
+        }
+
+        public async Task<bool> UserExists(User user)
+        {
+            using (var session = OpenSession())
+            {
+                return await _sdmap.ExecuteScalarAsync<bool>(session, 
+                    GetId(), new { UserName = user.UserName});
             }
         }
 

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Neo4j.Driver.V1;
-using sdmap.Compiler;
+using sdmap.ext;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -51,19 +51,10 @@ namespace CNBlogsCrawler.Inits
 
         private static void ConfigureService(IServiceCollection service)
         {
-            var compiler = new SdmapCompiler();
             var assembly = typeof(App).Assembly;
-            foreach (var name in assembly.GetManifestResourceNames()
-                .Where(x => x.EndsWith(".sdmap")))
-            {
-                using (var stream = assembly.GetManifestResourceStream(name))
-                using (var reader = new StreamReader(stream))
-                {
-                    var sourceCode = reader.ReadToEnd();
-                    compiler.AddSourceCode(sourceCode);
-                }
-            }
-            service.AddSingleton(compiler);
+            var sdmapEmiter = EmbeddedResourceSqlEmiter.CreateFrom(typeof(App).Assembly);
+            service.AddSingleton<ISdmapEmiter>(sdmapEmiter);
+            service.AddSingleton<SdmapContext>();
 
             foreach (var type in typeof(App).Assembly.GetExportedTypes()
                 .Select(x => new
