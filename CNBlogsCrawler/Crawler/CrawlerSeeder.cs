@@ -27,10 +27,11 @@ namespace CNBlogsCrawler.Crawler
                 CrawlerLevel = 0,
                 CrawlerStatus = CrawlerStatus.Pending,
             };
-            if (!await _db.UserExists(user))
+            if (!await _db.UserExists(user.UserName))
             {
                 await _db.CreateUser(user);
             }
+            var u = await _db.GetUser(user.UserName);
         }
     }
 }

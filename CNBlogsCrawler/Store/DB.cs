@@ -41,12 +41,21 @@ namespace CNBlogsCrawler.Store
             }
         }
 
-        public async Task<bool> UserExists(User user)
+        public async Task<bool> UserExists(string userName)
         {
             using (var session = OpenSession())
             {
                 return await _sdmap.ExecuteScalarAsync<bool>(session, 
-                    GetId(), new { UserName = user.UserName});
+                    GetId(), new { UserName = userName});
+            }
+        }
+
+        public async Task<User> GetUser(string userName)
+        {
+            using (var session = OpenSession())
+            {
+                return await _sdmap.QueryFirstAsync<User>(session,
+                    GetId(), new { UserName = userName });
             }
         }
 

@@ -16,3 +16,11 @@ sql UserExists
 	\})
 	RETURN true;
 }
+
+sql GetUser
+{
+	MATCH (n: User { 
+		UserName: $UserName
+	\})
+	RETURN n;
+}
