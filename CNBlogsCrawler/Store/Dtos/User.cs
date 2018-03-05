@@ -10,6 +10,8 @@ namespace CNBlogsCrawler.Store.Dtos
 
         public string DisplayName { get; set; }
 
+        public string Avatar { get; set; }
+
         public int CrawlerLevel { get; set; }
 
         public CrawlerStatus CrawlerStatus { get; set; }
