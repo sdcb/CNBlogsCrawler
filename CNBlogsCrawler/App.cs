@@ -23,6 +23,8 @@ namespace CNBlogsCrawler
 
             var seeder = container.GetService<CrawlerSeeder>();
             await seeder.Seed();
+            var server = container.GetService<CrawlerServer>();
+            await server.StartAsync();
         }
     }
 }

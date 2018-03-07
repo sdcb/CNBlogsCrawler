@@ -4,17 +4,37 @@
 	ASSERT n.UserName IS UNIQUE;
 }
 
-sql CreateUser
+sql CreateOrUpdate
 {
-	CREATE (n: User $props);
+	MERGE(n: User{UserName: $UserName\}) 
+	ON MATCH SET n += 
+	{
+		DisplayName:   $DisplayName, 
+		Avatar:        $Avatar, 
+		CrawlerLevel:  $CrawlerLevel, 
+		CrawlerStatus: $CrawlerStatus
+	\}
+	ON CREATE SET n = 
+	{
+		UserName:      $UserName, 
+		DisplayName:   $DisplayName, 
+		Avatar:        $Avatar, 
+		CrawlerStatus: $CrawlerStatus, 
+		CrawlerLevel:  $CrawlerLevel
+	\}
 }
 
-sql UserExists
+sql CreateIfNotExists
 {
-	MATCH (n: User { 
-		UserName: $UserName
-	\})
-	RETURN true;
+	MERGE(n: User{UserName: $UserName\}) 
+	ON CREATE SET n = 
+	{
+		UserName:      $UserName, 
+		DisplayName:   $DisplayName, 
+		Avatar:        $Avatar, 
+		CrawlerStatus: $CrawlerStatus, 
+		CrawlerLevel:  $CrawlerLevel
+	\}
 }
 
 sql GetUser
@@ -23,4 +43,37 @@ sql GetUser
 		UserName: $UserName
 	\})
 	RETURN n;
+}
+
+sql GetMoreUsers
+{
+	MATCH(n:User
+	{
+		CrawlerStatus: 0
+	\})
+	RETURN n
+	LIMIT 100
+}
+
+sql CreateUserFollow
+{
+    MATCH (a: User), (b: User)
+	WHERE a.UserName = $User AND b.UserName = $Follow
+	CREATE (a)-[r: follows]->(b)
+	RETURN r
+}
+
+sql CreateUserFan
+{
+	MATCH (a: User), (b: User)
+	WHERE a.UserName = $User AND b.UserName = $Fan
+	CREATE (a)<-[r: follows]-(b)
+	RETURN r
+}
+
+sql SetUserDone
+{
+	MATCH (a: User)
+	WHERE a.UserName = $UserName
+	SET a.CrawlerStatus = 1;
 }

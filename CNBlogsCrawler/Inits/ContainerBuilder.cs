@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 
 namespace CNBlogsCrawler.Inits
@@ -55,6 +56,7 @@ namespace CNBlogsCrawler.Inits
             var sdmapEmiter = EmbeddedResourceSqlEmiter.CreateFrom(typeof(App).Assembly);
             service.AddSingleton<ISdmapEmiter>(sdmapEmiter);
             service.AddSingleton<SdmapContext>();
+            service.AddSingleton<HttpClient>();
 
             foreach (var type in typeof(App).Assembly.GetExportedTypes()
                 .Select(x => new

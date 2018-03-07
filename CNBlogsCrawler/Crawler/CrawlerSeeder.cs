@@ -26,11 +26,9 @@ namespace CNBlogsCrawler.Crawler
                 DisplayName = "*",
                 CrawlerLevel = 0,
                 CrawlerStatus = CrawlerStatus.Pending,
+                Avatar = $"//pic.cnblogs.com/avatar/simple_avatar.gif", 
             };
-            if (!await _db.UserExists(user.UserName))
-            {
-                await _db.CreateUser(user);
-            }
+            await _db.CreateOrUpdate(user);
             var u = await _db.GetUser(user.UserName);
         }
     }

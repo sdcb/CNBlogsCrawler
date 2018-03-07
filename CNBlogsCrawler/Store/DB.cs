@@ -33,20 +33,77 @@ namespace CNBlogsCrawler.Store
             }
         }
 
-        public async Task CreateUser(User user)
+        public async Task CreateOrUpdate(User user)
         {
             using (var session = OpenSession())
             {
-                await _sdmap.ExecuteAsync(session, GetId(), new { props = user });
+                await _sdmap.ExecuteAsync(session, GetId(), user);
             }
         }
 
-        public async Task<bool> UserExists(string userName)
+        public async Task CreateIfNotExists(User user)
         {
             using (var session = OpenSession())
             {
-                return await _sdmap.ExecuteScalarAsync<bool>(session, 
-                    GetId(), new { UserName = userName});
+                await _sdmap.ExecuteAsync(session, GetId(), user);
+            }
+        }
+
+        public async Task CreateUserFan(string user, string fan)
+        {
+            using (var session = OpenSession())
+            {
+                await _sdmap.ExecuteAsync(session, GetId(), new
+                {
+                    User = user, 
+                    Fan = fan
+                });
+            }
+        }
+
+        internal async Task SetUserDone(User user)
+        {
+            using (var session = OpenSession())
+            {
+                await _sdmap.ExecuteAsync(session, GetId(), new { UserName = user.UserName });
+            }
+        }
+
+        public async Task CreateUserFollow(string user, string follow)
+        {
+            using (var session = OpenSession())
+            {
+                await _sdmap.ExecuteAsync(session, GetId(), new
+                {
+                    User = user, 
+                    Follow = follow
+                });
+            }
+        }
+
+        internal async Task<List<User>> GetMoreUsers()
+        {
+            using (var session = OpenSession())
+            {
+                return await _sdmap.QueryListAsync<User>(session, GetId());
+            }
+        }
+
+        internal async Task SaveUserFans(User user, List<User> fans)
+        {
+            foreach (var t in fans)
+            {
+                await CreateIfNotExists(t);
+                await CreateUserFan(user.UserName, t.UserName);
+            }
+        }
+
+        internal async Task SaveUserFollows(User user, List<User> follows)
+        {
+            foreach (var t in follows)
+            {
+                await CreateIfNotExists(t);
+                await CreateUserFollow(user.UserName, t.UserName);
             }
         }
 

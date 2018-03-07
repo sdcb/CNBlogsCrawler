@@ -1,0 +1,12 @@
+﻿sql CreateUser
+{
+	CREATE (n: User $props);
+}
+
+sql UserExists
+{
+	MATCH (n: User { 
+		UserName: $UserName
+	\})
+	RETURN true;
+}
