@@ -2,6 +2,8 @@
 using CNBlogsCrawler.Store;
 using CNBlogsCrawler.Store.Dtos;
 using HtmlAgilityPack;
+using Polly;
+using Polly.Retry;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -18,6 +20,7 @@ namespace CNBlogsCrawler.Crawler
         private readonly DB _db;
         private readonly HttpClient _http;
         private readonly HtmlExtractor _extractor;
+        private readonly RetryPolicy _retryPolicy;
 
         public CrawlerServer(
             ILogger logger, 
@@ -29,6 +32,11 @@ namespace CNBlogsCrawler.Crawler
             _db = db;
             _http = http;
             _extractor = extractor;
+            _retryPolicy = Policy.Handle<HttpRequestException>()
+                .WaitAndRetryAsync(10, i => TimeSpan.FromSeconds(i), (exception, timespan) =>
+                {
+                    _logger.Error(exception, "timespan: {0}", timespan);
+                });
         }
 
         public async Task StartAsync()
@@ -51,7 +59,7 @@ namespace CNBlogsCrawler.Crawler
 
         private Task Login()
         {
-            _http.DefaultRequestHeaders.Add("Cookie", null);
+            _http.DefaultRequestHeaders.Add("Cookie", "");
             return Task.FromResult(0);
         }
 
@@ -70,7 +78,7 @@ namespace CNBlogsCrawler.Crawler
             for (var page = 1; ; page++)
             {
                 string url = $"https://home.cnblogs.com/u/{user.UserName}/relation/followers?page={page}";
-                string html = await _http.GetStringAsync(url);
+                string html = await _retryPolicy.ExecuteAsync(() => _http.GetStringAsync(url));
                 List<User> users = _extractor.ExtractUsers(html, user.CrawlerLevel + 1);
                 if (users.Count == 0) break;
                 result.AddRange(users);
@@ -84,7 +92,7 @@ namespace CNBlogsCrawler.Crawler
             for (var page = 1; ; page++)
             {
                 string url = $"https://home.cnblogs.com/u/{user.UserName}/relation/following?page={page}";
-                string html = await _http.GetStringAsync(url);
+                string html = await _retryPolicy.ExecuteAsync(() => _http.GetStringAsync(url));
                 List<User> users = _extractor.ExtractUsers(html, user.CrawlerLevel + 1);
                 if (users.Count == 0) break;
                 result.AddRange(users);                

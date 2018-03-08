@@ -6,6 +6,7 @@ using sdmap.Compiler;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -61,7 +62,7 @@ namespace sdmap.ext
         {
             var statement = ctx.Emit(statementId, parameters);
             var cursor = await session.RunAsync(statement, parameters.ToDictionary());
-            Debug.Assert(await cursor.FetchAsync());
+            if (!await cursor.FetchAsync()) throw new Exception();
             return cursor.Current.MapTo<T>();
         }
     }
