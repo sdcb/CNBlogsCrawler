@@ -59,16 +59,14 @@ sql CreateUserFollow
 {
     MATCH (a: User), (b: User)
 	WHERE a.UserName = $User AND b.UserName = $Follow
-	CREATE (a)-[r: follows]->(b)
-	RETURN r
+	MERGE (a)-[r: follows]->(b)
 }
 
 sql CreateUserFan
 {
 	MATCH (a: User), (b: User)
 	WHERE a.UserName = $User AND b.UserName = $Fan
-	CREATE (a)<-[r: follows]-(b)
-	RETURN r
+	MERGE (a)<-[r: follows]-(b)
 }
 
 sql SetUserDone

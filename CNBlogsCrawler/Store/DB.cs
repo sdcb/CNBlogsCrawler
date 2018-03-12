@@ -2,6 +2,7 @@
 using CNBlogsCrawler.Store.Dtos;
 using Neo4j.Driver.V1;
 using sdmap.ext;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -15,11 +16,13 @@ namespace CNBlogsCrawler.Store
     {
         private readonly IDriver _driver;
         private readonly SdmapContext _sdmap;
+        private readonly Serilog.ILogger _log;
 
-        public DB(IDriver driver, SdmapContext sdmap)
+        public DB(IDriver driver, SdmapContext sdmap, Serilog.ILogger logger)
         {
             _driver = driver;
             _sdmap = sdmap;
+            _log = logger;
         }
 
         private ISession OpenSession()
@@ -55,7 +58,7 @@ namespace CNBlogsCrawler.Store
             {
                 await _sdmap.ExecuteAsync(session, GetId(), new
                 {
-                    User = user, 
+                    User = user,
                     Fan = fan
                 });
             }
@@ -75,7 +78,7 @@ namespace CNBlogsCrawler.Store
             {
                 await _sdmap.ExecuteAsync(session, GetId(), new
                 {
-                    User = user, 
+                    User = user,
                     Follow = follow
                 });
             }
@@ -93,6 +96,11 @@ namespace CNBlogsCrawler.Store
         {
             foreach (var t in fans)
             {
+                if (t.UserName.StartsWith("pick"))
+                {
+                    _log.Error("Invalid User: {0}", null, t.UserName);
+                    continue;
+                }
                 await CreateIfNotExists(t);
                 await CreateUserFan(user.UserName, t.UserName);
             }
@@ -102,6 +110,11 @@ namespace CNBlogsCrawler.Store
         {
             foreach (var t in follows)
             {
+                if (t.UserName.StartsWith("pick"))
+                {
+                    _log.Error("Invalid User: {0}", null, t.UserName);
+                    continue;
+                }
                 await CreateIfNotExists(t);
                 await CreateUserFollow(user.UserName, t.UserName);
             }
